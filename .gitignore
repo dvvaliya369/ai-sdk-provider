@@ -3,3 +3,4 @@ dist
 ./internal
 
 .env.e2e*
+config.bat
