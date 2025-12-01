@@ -17,10 +17,7 @@ dist/
 Thumbs.db
 
 # Environment variables
-.env
-.env.local
-.env.development
-.env.production
+!example.env.*
 
 # Logs
 logs/
@@ -37,3 +34,4 @@ coverage/
 .cache/
 tmp/
 temp/
+config.bat
