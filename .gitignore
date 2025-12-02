@@ -10,3 +10,4 @@ dist
 reference/
 
 tsconfig.tsbuildinfo
+config.bat
