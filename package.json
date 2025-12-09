@@ -91,6 +91,8 @@
   ],
   "packageManager": "pnpm@10.12.4",
   "dependencies": {
-    "@openrouter/sdk": "^0.1.27"
+    "@openrouter/sdk": "^0.1.27",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2"
   }
 }
