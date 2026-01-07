@@ -8,4 +8,4 @@ dist
 
 # Reference repositories (git submodules)
 reference/
-.env
+config.bat
