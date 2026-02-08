@@ -248,8 +248,13 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
       },
     ]);
   });
@@ -677,8 +682,13 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
       },
     ]);
   });
@@ -1560,5 +1570,21 @@ describe('multi-turn reasoning_details deduplication (issue #254)', () => {
         },
       ],
     });
+  });
+
+  it('should not include cache_control on system message without provider metadata', () => {
+    const result = convertToOpenRouterChatMessages([
+      {
+        role: 'system',
+        content: 'System prompt without caching',
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'system',
+        content: 'System prompt without caching',
+      },
+    ]);
   });
 });
