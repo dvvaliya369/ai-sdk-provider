@@ -232,7 +232,7 @@ describe('user messages', () => {
 });
 
 describe('cache control', () => {
-  it('should pass cache control from system message provider metadata', () => {
+  it('should pass cache control from system message provider metadata as content block', () => {
     const result = convertToOpenRouterChatMessages([
       {
         role: 'system',
@@ -248,8 +248,29 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should keep system message content as plain string when no cache control', () => {
+    const result = convertToOpenRouterChatMessages([
+      {
+        role: 'system',
         content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'system',
+        content: 'System prompt',
       },
     ]);
   });
@@ -677,8 +698,13 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
       },
     ]);
   });
