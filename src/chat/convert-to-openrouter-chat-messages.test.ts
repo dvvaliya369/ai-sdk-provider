@@ -232,7 +232,7 @@ describe('user messages', () => {
 });
 
 describe('cache control', () => {
-  it('should pass cache control from system message provider metadata', () => {
+  it('should pass cache control from system message provider metadata as content array', () => {
     const result = convertToOpenRouterChatMessages([
       {
         role: 'system',
@@ -248,8 +248,13 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
       },
     ]);
   });
@@ -661,6 +666,22 @@ describe('cache control', () => {
     ]);
   });
 
+  it('should keep system message content as plain string without cache control', () => {
+    const result = convertToOpenRouterChatMessages([
+      {
+        role: 'system',
+        content: 'System prompt',
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'system',
+        content: 'System prompt',
+      },
+    ]);
+  });
+
   it('should support the alias cache_control field', () => {
     const result = convertToOpenRouterChatMessages([
       {
@@ -677,8 +698,13 @@ describe('cache control', () => {
     expect(result).toEqual([
       {
         role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
+        content: [
+          {
+            type: 'text',
+            text: 'System prompt',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
       },
     ]);
   });
