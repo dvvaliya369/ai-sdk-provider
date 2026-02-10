@@ -46,10 +46,20 @@ export function convertToOpenRouterChatMessages(
   for (const { role, content, providerOptions } of prompt) {
     switch (role) {
       case 'system': {
+        const cacheControl = getCacheControl(providerOptions);
+        // For Anthropic models, when cache_control is present, content must be an array
+        const systemContent: string | ChatCompletionContentPart[] = cacheControl
+          ? [
+              {
+                type: 'text',
+                text: content,
+                cache_control: cacheControl,
+              },
+            ]
+          : content;
         messages.push({
           role: 'system',
-          content,
-          cache_control: getCacheControl(providerOptions),
+          content: systemContent,
         });
         break;
       }

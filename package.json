@@ -59,6 +59,7 @@
     "ai": "6.0.3",
     "dotenv": "17.2.1",
     "msw": "2.12.4",
+    "node-fetch": "^3.3.2",
     "tsup": "8.5.0",
     "typescript": "5.9.2",
     "vite-tsconfig-paths": "5.1.4",
