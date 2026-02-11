@@ -125,6 +125,41 @@ const model = openrouter.googleSearch('google/gemini-2.0-flash-exp');
     modelId: OpenRouterChatModelId,
     settings?: Omit<OpenRouterChatSettings, 'google_search_retrieval'>,
   ): OpenRouterChatLanguageModel;
+
+  /**
+Creates an OpenRouter chat model with smart grounding that automatically falls back
+between URL context and Google Search based on availability and model support.
+
+When you provide URLs, the SDK will try URL grounding first, then fall back to
+Google Search if URL grounding is not supported. If no URLs are provided, it uses
+Google Search directly.
+
+This method eliminates the need for manual fallback logic, making grounding "just work".
+
+@param modelId - The model identifier (e.g., 'google/gemini-2.0-flash-exp')
+@param urls - Optional URL(s) to use for URL grounding. If omitted, uses Google Search only.
+@param settings - Additional model settings (optional)
+
+@example Using with URLs (tries URL grounding, falls back to Google Search):
+```ts
+const model = openrouter.grounding('google/gemini-2.0-flash-exp', [
+  'https://example.com/article',
+]);
+```
+
+@example Using without URLs (uses Google Search):
+```ts
+const model = openrouter.grounding('google/gemini-2.0-flash-exp');
+```
+   */
+  grounding(
+    modelId: OpenRouterChatModelId,
+    urls?: string | string[],
+    settings?: Omit<
+      OpenRouterChatSettings,
+      'url_grounding' | 'google_search_retrieval'
+    >,
+  ): OpenRouterChatLanguageModel;
 }
 
 export interface OpenRouterProviderSettings {
@@ -297,6 +332,44 @@ export function createOpenRouter(
     });
   };
 
+  const createGroundingModel = (
+    modelId: OpenRouterChatModelId,
+    urls?: string | string[],
+    settings: Omit<
+      OpenRouterChatSettings,
+      'url_grounding' | 'google_search_retrieval'
+    > = {},
+  ) => {
+    // If URLs are provided, use URL grounding with fallback enabled
+    if (urls !== undefined && urls !== null) {
+      const urlArray = Array.isArray(urls) ? urls : [urls];
+
+      // If empty array provided, treat as no URLs
+      if (urlArray.length === 0) {
+        return createChatModel(modelId, {
+          ...settings,
+          google_search_retrieval: {},
+        });
+      }
+
+      return createChatModel(modelId, {
+        ...settings,
+        url_grounding: {
+          urls: urlArray,
+        },
+        google_search_retrieval: {},
+        _enableGroundingFallback: true,
+        _groundingPreference: 'url-first',
+      });
+    }
+
+    // No URLs provided, use Google Search only
+    return createChatModel(modelId, {
+      ...settings,
+      google_search_retrieval: {},
+    });
+  };
+
   const provider = (
     modelId: OpenRouterChatModelId | OpenRouterCompletionModelId,
     settings?: OpenRouterChatSettings | OpenRouterCompletionSettings,
@@ -310,6 +383,7 @@ export function createOpenRouter(
   provider.imageModel = createImageModel;
   provider.urlGrounding = createUrlGroundingModel;
   provider.googleSearch = createGoogleSearchModel;
+  provider.grounding = createGroundingModel;
 
   return provider as OpenRouterProvider;
 }

@@ -115,8 +115,15 @@ export function validateAndLogGrounding(
 ): string[] {
   const warnings: string[] = [];
 
-  // Validate if both grounding methods are configured
-  if (settings.url_grounding && settings.google_search_retrieval) {
+  // Skip warning if fallback mode is enabled
+  const fallbackEnabled = settings._enableGroundingFallback;
+
+  // Validate if both grounding methods are configured (and not in fallback mode)
+  if (
+    settings.url_grounding &&
+    settings.google_search_retrieval &&
+    !fallbackEnabled
+  ) {
     const warning =
       '[OpenRouter] Warning: Both url_grounding and google_search_retrieval are configured. Depending on the model, this may cause conflicts or unexpected behavior. Consider using only one grounding method.';
     warnings.push(warning);
@@ -130,12 +137,15 @@ export function validateAndLogGrounding(
     // Debug log
     if (process.env.DEBUG?.includes('openrouter')) {
       console.debug(
-        '[OpenRouter] URL grounding enabled:',
+        fallbackEnabled
+          ? '[OpenRouter] URL grounding enabled (with fallback to Google Search):'
+          : '[OpenRouter] URL grounding enabled:',
         JSON.stringify(
           {
             urls: settings.url_grounding.urls,
             dynamic_retrieval_config:
               settings.url_grounding.dynamic_retrieval_config,
+            fallbackEnabled,
           },
           null,
           2,
@@ -151,11 +161,14 @@ export function validateAndLogGrounding(
     // Debug log
     if (process.env.DEBUG?.includes('openrouter')) {
       console.debug(
-        '[OpenRouter] Google Search grounding enabled:',
+        fallbackEnabled && settings.url_grounding
+          ? '[OpenRouter] Google Search grounding enabled (as fallback):'
+          : '[OpenRouter] Google Search grounding enabled:',
         JSON.stringify(
           {
             dynamic_retrieval_config:
               settings.google_search_retrieval.dynamic_retrieval_config,
+            fallbackEnabled,
           },
           null,
           2,

@@ -241,4 +241,18 @@ monitor and detect abuse. Learn more.
      */
     dynamic_retrieval_config?: DynamicRetrievalConfig;
   };
+
+  /**
+   * Internal flag to enable smart grounding fallback behavior.
+   * When true, the SDK will automatically fall back between URL grounding
+   * and Google Search if one method is not supported by the model.
+   * @internal
+   */
+  _enableGroundingFallback?: boolean;
+
+  /**
+   * Internal grounding preference order when fallback is enabled.
+   * @internal
+   */
+  _groundingPreference?: 'url-first' | 'search-first';
 } & OpenRouterSharedSettings;

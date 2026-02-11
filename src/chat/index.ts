@@ -251,13 +251,70 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
       }
     }
 
+    // Attempt to make the API call with automatic fallback handling
+    let lastError: Error | undefined;
+    const fallbackEnabled = this.settings._enableGroundingFallback;
+
+    // Try URL grounding first if enabled with fallback
+    if (fallbackEnabled && args.url_grounding) {
+      try {
+        const { value: responseValue, responseHeaders } =
+          await postJsonToApi({
+            url: this.config.url({
+              path: '/chat/completions',
+              modelId: this.modelId,
+            }),
+            headers: combineHeaders(this.config.headers(), options.headers),
+            body: {
+              ...args,
+              // Only send URL grounding, not Google Search on first attempt
+              google_search_retrieval: undefined,
+            },
+            failedResponseHandler: openrouterFailedResponseHandler,
+            successfulResponseHandler: createJsonResponseHandler(
+              OpenRouterNonStreamChatCompletionResponseSchema,
+            ),
+            abortSignal: options.abortSignal,
+            fetch: this.config.fetch,
+          });
+
+        // URL grounding succeeded, process response normally
+        return this.processGenerateResponse(
+          responseValue,
+          responseHeaders,
+          args,
+        );
+      } catch (error) {
+        // Check if error indicates unsupported grounding
+        if (this.isGroundingUnsupportedError(error)) {
+          if (process.env.DEBUG?.includes('openrouter')) {
+            console.debug(
+              '[OpenRouter] URL grounding not supported, falling back to Google Search',
+            );
+          }
+          lastError = error as Error;
+          // Continue to fallback below
+        } else {
+          // Re-throw non-grounding errors
+          throw error;
+        }
+      }
+    }
+
+    // Make request (either fallback or normal request without fallback)
     const { value: responseValue, responseHeaders } = await postJsonToApi({
       url: this.config.url({
         path: '/chat/completions',
         modelId: this.modelId,
       }),
       headers: combineHeaders(this.config.headers(), options.headers),
-      body: args,
+      body: fallbackEnabled && lastError
+        ? {
+            ...args,
+            // Remove URL grounding, use only Google Search
+            url_grounding: undefined,
+          }
+        : args,
       failedResponseHandler: openrouterFailedResponseHandler,
       successfulResponseHandler: createJsonResponseHandler(
         OpenRouterNonStreamChatCompletionResponseSchema,
@@ -265,6 +322,51 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
       abortSignal: options.abortSignal,
       fetch: this.config.fetch,
     });
+
+    return this.processGenerateResponse(responseValue, responseHeaders, args);
+  }
+
+  /**
+   * Check if error indicates unsupported grounding feature
+   */
+  private isGroundingUnsupportedError(error: unknown): boolean {
+    if (error instanceof APICallError) {
+      const message = error.message?.toLowerCase() || '';
+      return (
+        message.includes('url_grounding') ||
+        message.includes('grounding') ||
+        message.includes('not supported') ||
+        message.includes('invalid parameter')
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Process the generate response (extracted for reuse)
+   */
+  private processGenerateResponse(
+    responseValue: unknown,
+    responseHeaders: Record<string, string>,
+    args: Record<string, unknown>,
+  ): {
+    content: Array<LanguageModelV3Content>;
+    finishReason: LanguageModelV3FinishReason;
+    usage: LanguageModelV3Usage;
+    warnings: Array<SharedV3Warning>;
+    providerMetadata?: {
+      openrouter: {
+        provider: string;
+        reasoning_details?: ReasoningDetailUnion[];
+        usage: OpenRouterUsageAccounting;
+      };
+    };
+    request?: { body?: unknown };
+    response?: LanguageModelV3ResponseMetadata & {
+      headers?: SharedV3Headers;
+      body?: unknown;
+    };
+  } {
 
     // Check if response is an error (HTTP 200 with error payload)
     if ('error' in responseValue) {
