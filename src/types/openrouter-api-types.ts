@@ -74,3 +74,30 @@ export type Quantization =
  * Open enum - accepts known values or any string for forward compatibility.
  */
 export type ProviderSort = 'price' | 'throughput' | 'latency' | (string & {});
+
+/**
+ * Dynamic retrieval mode for grounding.
+ * - MODE_UNSPECIFIED: Default mode
+ * - MODE_DYNAMIC: Dynamically decide whether to use grounding based on confidence
+ * - MODE_STATIC: Always use grounding
+ */
+export type DynamicRetrievalMode =
+  | 'MODE_UNSPECIFIED'
+  | 'MODE_DYNAMIC'
+  | 'MODE_STATIC'
+  | (string & {});
+
+/**
+ * Dynamic retrieval configuration for grounding.
+ */
+export type DynamicRetrievalConfig = {
+  /**
+   * The mode of dynamic retrieval
+   */
+  mode?: DynamicRetrievalMode;
+  /**
+   * Threshold for dynamic retrieval (0-1). Only applies when mode is MODE_DYNAMIC.
+   * Higher values make grounding more selective.
+   */
+  dynamic_threshold?: number;
+};

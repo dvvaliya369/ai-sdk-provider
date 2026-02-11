@@ -1,6 +1,7 @@
 import type { OpenRouterSharedSettings } from '..';
 import type {
   DataCollection,
+  DynamicRetrievalConfig,
   Engine,
   IdFileParser,
   IdModeration,
@@ -176,5 +177,35 @@ monitor and detect abuse. Learn more.
      * When true, only endpoints that do not retain prompts will be used.
      */
     zdr?: boolean;
+  };
+
+  /**
+   * URL grounding configuration for grounding responses in specific web content.
+   * Supported by models like Google Gemini.
+   * @see https://ai.google.dev/gemini-api/docs/grounding
+   */
+  url_grounding?: {
+    /**
+     * List of URLs to use for grounding. The model will use content from these URLs
+     * to improve factual accuracy and provide citations.
+     */
+    urls: string[];
+    /**
+     * Configuration for dynamic retrieval to control when grounding is applied
+     */
+    dynamic_retrieval_config?: DynamicRetrievalConfig;
+  };
+
+  /**
+   * Google Search grounding configuration for grounding responses in real-time search results.
+   * Supported by models like Google Gemini. This provides real-time information from Google Search
+   * to improve factual accuracy and provide citations.
+   * @see https://ai.google.dev/gemini-api/docs/google-search
+   */
+  google_search_retrieval?: {
+    /**
+     * Configuration for dynamic retrieval to control when grounding is applied
+     */
+    dynamic_retrieval_config?: DynamicRetrievalConfig;
   };
 } & OpenRouterSharedSettings;

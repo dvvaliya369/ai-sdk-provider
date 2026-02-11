@@ -167,6 +167,9 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
       provider: this.settings.provider,
       // Debug settings:
       debug: this.settings.debug,
+      // Grounding settings:
+      url_grounding: this.settings.url_grounding,
+      google_search_retrieval: this.settings.google_search_retrieval,
 
       // extra body:
       ...this.config.extraBody,
