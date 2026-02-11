@@ -1,7 +1,6 @@
 import type { OpenRouterSharedSettings } from '..';
 import type {
   DataCollection,
-  DynamicRetrievalConfig,
   Engine,
   IdFileParser,
   IdModeration,
@@ -11,6 +10,9 @@ import type {
   ProviderSort,
   Quantization,
 } from './openrouter-api-types';
+import type { DynamicRetrievalConfig } from './openrouter-api-types';
+
+export type { DynamicRetrievalConfig };
 
 // https://openrouter.ai/api/v1/models
 export type OpenRouterChatModelId = string;
@@ -182,7 +184,25 @@ monitor and detect abuse. Learn more.
   /**
    * URL grounding configuration for grounding responses in specific web content.
    * Supported by models like Google Gemini.
+   *
    * @see https://ai.google.dev/gemini-api/docs/grounding
+   *
+   * @example Using provider helper method (recommended):
+   * ```ts
+   * const model = openrouter.urlGrounding('google/gemini-2.0-flash-exp', [
+   *   'https://example.com/article1',
+   *   'https://example.com/article2',
+   * ]);
+   * ```
+   *
+   * @example Using model settings directly:
+   * ```ts
+   * const model = openrouter('google/gemini-2.0-flash-exp', {
+   *   url_grounding: {
+   *     urls: ['https://example.com/article1'],
+   *   },
+   * });
+   * ```
    */
   url_grounding?: {
     /**
@@ -200,7 +220,20 @@ monitor and detect abuse. Learn more.
    * Google Search grounding configuration for grounding responses in real-time search results.
    * Supported by models like Google Gemini. This provides real-time information from Google Search
    * to improve factual accuracy and provide citations.
+   *
    * @see https://ai.google.dev/gemini-api/docs/google-search
+   *
+   * @example Using provider helper method (recommended):
+   * ```ts
+   * const model = openrouter.googleSearch('google/gemini-2.0-flash-exp');
+   * ```
+   *
+   * @example Using model settings directly:
+   * ```ts
+   * const model = openrouter('google/gemini-2.0-flash-exp', {
+   *   google_search_retrieval: {},
+   * });
+   * ```
    */
   google_search_retrieval?: {
     /**

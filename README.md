@@ -305,6 +305,129 @@ for await (const partialComponent of result.partialObjectStream) {
 }
 ```
 
+## Grounding (URL Context & Google Search)
+
+OpenRouter supports grounding with URL context and Google Search for supported models like Google Gemini. Grounding improves factual accuracy by using specific web content or real-time search results, and provides citations in responses.
+
+### URL Grounding
+
+URL grounding allows you to provide specific URLs that the model should use as context when generating responses. This is useful when you want the model to reference specific articles, documentation, or web pages.
+
+#### Using the Convenience Method (Recommended)
+
+```typescript
+import { openrouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
+const model = openrouter.urlGrounding('google/gemini-2.0-flash-exp', [
+  'https://example.com/article1',
+  'https://example.com/article2',
+]);
+
+const { text } = await generateText({
+  model,
+  prompt: 'Summarize the key points from these articles.',
+});
+
+console.log(text);
+```
+
+You can also pass a single URL as a string:
+
+```typescript
+const model = openrouter.urlGrounding(
+  'google/gemini-2.0-flash-exp',
+  'https://example.com/article',
+);
+```
+
+#### Using Model Settings
+
+```typescript
+import { openrouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
+const model = openrouter('google/gemini-2.0-flash-exp', {
+  url_grounding: {
+    urls: ['https://example.com/article1', 'https://example.com/article2'],
+  },
+});
+
+const { text } = await generateText({
+  model,
+  prompt: 'Summarize the key points from these articles.',
+});
+```
+
+#### Advanced: Dynamic Retrieval Configuration
+
+You can control when URL grounding is applied using dynamic retrieval configuration:
+
+```typescript
+const model = openrouter('google/gemini-2.0-flash-exp', {
+  url_grounding: {
+    urls: ['https://example.com/article'],
+    dynamic_retrieval_config: {
+      mode: 'MODE_DYNAMIC', // 'MODE_UNSPECIFIED' | 'MODE_DYNAMIC' | 'MODE_STATIC'
+      dynamic_threshold: 0.5, // Only applies when mode is MODE_DYNAMIC (0-1)
+    },
+  },
+});
+```
+
+### Google Search Grounding
+
+Google Search grounding provides real-time information from Google Search results to improve factual accuracy and provide up-to-date information.
+
+#### Using the Convenience Method (Recommended)
+
+```typescript
+import { openrouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
+const model = openrouter.googleSearch('google/gemini-2.0-flash-exp');
+
+const { text } = await generateText({
+  model,
+  prompt: 'What are the latest developments in AI research?',
+});
+
+console.log(text);
+```
+
+#### Using Model Settings
+
+```typescript
+import { openrouter } from '@openrouter/ai-sdk-provider';
+import { generateText } from 'ai';
+
+const model = openrouter('google/gemini-2.0-flash-exp', {
+  google_search_retrieval: {},
+});
+
+const { text } = await generateText({
+  model,
+  prompt: 'What are the latest developments in AI research?',
+});
+```
+
+#### Advanced: Dynamic Retrieval Configuration
+
+```typescript
+const model = openrouter('google/gemini-2.0-flash-exp', {
+  google_search_retrieval: {
+    dynamic_retrieval_config: {
+      mode: 'MODE_DYNAMIC',
+      dynamic_threshold: 0.7,
+    },
+  },
+});
+```
+
+### Supported Models
+
+URL grounding and Google Search grounding are primarily supported by Google Gemini models. Check the [OpenRouter documentation](https://openrouter.ai/docs) for the latest list of supported models.
+
 ## Use Cases
 
 ### Response Healing for Structured Outputs

@@ -85,6 +85,46 @@ Creates an OpenRouter image model for image generation.
     modelId: OpenRouterImageModelId,
     settings?: OpenRouterImageSettings,
   ): OpenRouterImageModel;
+
+  /**
+Creates an OpenRouter chat model with URL grounding enabled.
+URL grounding uses specific web content to improve factual accuracy and provide citations.
+
+@param modelId - The model identifier (e.g., 'google/gemini-2.0-flash-exp')
+@param urls - Single URL or array of URLs to use for grounding
+@param settings - Additional model settings (optional)
+
+@example
+```ts
+const model = openrouter.urlGrounding('google/gemini-2.0-flash-exp', [
+  'https://example.com/article1',
+  'https://example.com/article2',
+]);
+```
+   */
+  urlGrounding(
+    modelId: OpenRouterChatModelId,
+    urls: string | string[],
+    settings?: Omit<OpenRouterChatSettings, 'url_grounding'>,
+  ): OpenRouterChatLanguageModel;
+
+  /**
+Creates an OpenRouter chat model with Google Search grounding enabled.
+Google Search grounding provides real-time information from Google Search results
+to improve factual accuracy and provide citations.
+
+@param modelId - The model identifier (e.g., 'google/gemini-2.0-flash-exp')
+@param settings - Additional model settings (optional)
+
+@example
+```ts
+const model = openrouter.googleSearch('google/gemini-2.0-flash-exp');
+```
+   */
+  googleSearch(
+    modelId: OpenRouterChatModelId,
+    settings?: Omit<OpenRouterChatSettings, 'google_search_retrieval'>,
+  ): OpenRouterChatLanguageModel;
 }
 
 export interface OpenRouterProviderSettings {
@@ -233,6 +273,30 @@ export function createOpenRouter(
     return createChatModel(modelId, settings as OpenRouterChatSettings);
   };
 
+  const createUrlGroundingModel = (
+    modelId: OpenRouterChatModelId,
+    urls: string | string[],
+    settings: Omit<OpenRouterChatSettings, 'url_grounding'> = {},
+  ) => {
+    const urlArray = Array.isArray(urls) ? urls : [urls];
+    return createChatModel(modelId, {
+      ...settings,
+      url_grounding: {
+        urls: urlArray,
+      },
+    });
+  };
+
+  const createGoogleSearchModel = (
+    modelId: OpenRouterChatModelId,
+    settings: Omit<OpenRouterChatSettings, 'google_search_retrieval'> = {},
+  ) => {
+    return createChatModel(modelId, {
+      ...settings,
+      google_search_retrieval: {},
+    });
+  };
+
   const provider = (
     modelId: OpenRouterChatModelId | OpenRouterCompletionModelId,
     settings?: OpenRouterChatSettings | OpenRouterCompletionSettings,
@@ -244,6 +308,8 @@ export function createOpenRouter(
   provider.textEmbeddingModel = createEmbeddingModel;
   provider.embedding = createEmbeddingModel; // deprecated alias for v4 compatibility
   provider.imageModel = createImageModel;
+  provider.urlGrounding = createUrlGroundingModel;
+  provider.googleSearch = createGoogleSearchModel;
 
   return provider as OpenRouterProvider;
 }

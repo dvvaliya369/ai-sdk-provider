@@ -78,10 +78,7 @@ function validateDynamicRetrievalConfig(
 ): void {
   if (config.mode !== undefined) {
     const validModes = ['MODE_UNSPECIFIED', 'MODE_DYNAMIC', 'MODE_STATIC'];
-    if (
-      !validModes.includes(config.mode) &&
-      typeof config.mode !== 'string'
-    ) {
+    if (!validModes.includes(config.mode) && typeof config.mode !== 'string') {
       throw new GroundingValidationError(
         `Invalid ${context}.dynamic_retrieval_config.mode: ${JSON.stringify(config.mode)}. Must be 'MODE_UNSPECIFIED', 'MODE_DYNAMIC', or 'MODE_STATIC'.`,
       );

@@ -199,7 +199,9 @@ describe('validateAndLogGrounding', () => {
     expect(warnings[0]).toContain(
       'Both url_grounding and google_search_retrieval are configured',
     );
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Both'));
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Both'),
+    );
 
     consoleWarnSpy.mockRestore();
   });

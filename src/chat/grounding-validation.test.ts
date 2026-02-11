@@ -172,7 +172,9 @@ describe('OpenRouterChatLanguageModel grounding validation', () => {
         expect.fail('Should have thrown error');
       } catch (error) {
         expect(error).toBeInstanceOf(GroundingValidationError);
-        expect((error as Error).message).toContain('Must be a number between 0 and 1');
+        expect((error as Error).message).toContain(
+          'Must be a number between 0 and 1',
+        );
         expect((error as Error).message).toContain('2.5');
       }
     });
