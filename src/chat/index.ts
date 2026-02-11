@@ -49,6 +49,7 @@ import {
   OpenRouterNonStreamChatCompletionResponseSchema,
   OpenRouterStreamChatCompletionChunkSchema,
 } from './schemas';
+import { validateAndLogGrounding } from '../utils/validate-grounding';
 
 type OpenRouterChatConfig = {
   provider: string;
@@ -86,6 +87,9 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
     this.modelId = modelId;
     this.settings = settings;
     this.config = config;
+
+    // Validate grounding configuration at construction time
+    validateAndLogGrounding(settings);
   }
 
   private getArgs({
@@ -229,6 +233,23 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
       ...this.getArgs(options),
       ...openrouterOptions,
     };
+
+    // Debug log for grounding configuration in request
+    if (process.env.DEBUG?.includes('openrouter')) {
+      const groundingInfo: Record<string, unknown> = {};
+      if (args.url_grounding) {
+        groundingInfo.url_grounding = args.url_grounding;
+      }
+      if (args.google_search_retrieval) {
+        groundingInfo.google_search_retrieval = args.google_search_retrieval;
+      }
+      if (Object.keys(groundingInfo).length > 0) {
+        console.debug(
+          '[OpenRouter] Grounding configuration in request:',
+          JSON.stringify(groundingInfo, null, 2),
+        );
+      }
+    }
 
     const { value: responseValue, responseHeaders } = await postJsonToApi({
       url: this.config.url({
@@ -544,6 +565,23 @@ export class OpenRouterChatLanguageModel implements LanguageModelV3 {
       ...this.getArgs(options),
       ...openrouterOptions,
     };
+
+    // Debug log for grounding configuration in request
+    if (process.env.DEBUG?.includes('openrouter')) {
+      const groundingInfo: Record<string, unknown> = {};
+      if (args.url_grounding) {
+        groundingInfo.url_grounding = args.url_grounding;
+      }
+      if (args.google_search_retrieval) {
+        groundingInfo.google_search_retrieval = args.google_search_retrieval;
+      }
+      if (Object.keys(groundingInfo).length > 0) {
+        console.debug(
+          '[OpenRouter] Grounding configuration in streaming request:',
+          JSON.stringify(groundingInfo, null, 2),
+        );
+      }
+    }
 
     const { value: response, responseHeaders } = await postJsonToApi({
       url: this.config.url({
